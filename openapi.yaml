@@ -1,0 +1,382 @@
+openapi: 3.0.3
+info:
+  title: TESTDIP C++ Web API
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Service is healthy
+  /api/locations:
+    get:
+      summary: List locations
+      responses:
+        "200":
+          description: Location list
+    post:
+      summary: Create location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, siteNumber]
+              properties:
+                name:
+                  type: string
+                siteNumber:
+                  type: string
+                distanceFromSourceKm:
+                  type: number
+                description:
+                  type: string
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+      responses:
+        "201":
+          description: Created
+  /api/locations/{id}/samples:
+    get:
+      summary: List samples for location
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: metalId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Optional metal filter.
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Optional sampling year filter.
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 500
+          description: Page size.
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: Page offset.
+      responses:
+        "200":
+          description: Paginated sample list
+    post:
+      summary: Add sample to location
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [metalId, value, samplingDate]
+              properties:
+                metalId:
+                  type: integer
+                position:
+                  type: string
+                repetition:
+                  type: integer
+                  default: 1
+                value:
+                  type: number
+                samplingDate:
+                  type: string
+                  format: date
+                analyticsNumber:
+                  type: string
+      responses:
+        "201":
+          description: Created
+  /api/locations/{id}:
+    put:
+      summary: Replace location
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, siteNumber]
+              properties:
+                name:
+                  type: string
+                siteNumber:
+                  type: string
+                distanceFromSourceKm:
+                  type: number
+                description:
+                  type: string
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+      responses:
+        "200":
+          description: Updated
+        "404":
+          description: Location not found
+    delete:
+      summary: Delete location
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Location not found
+  /api/samples/{id}:
+    put:
+      summary: Replace sample
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [locationId, metalId, value, samplingDate]
+              properties:
+                locationId:
+                  type: integer
+                metalId:
+                  type: integer
+                position:
+                  type: string
+                repetition:
+                  type: integer
+                  default: 1
+                value:
+                  type: number
+                samplingDate:
+                  type: string
+                  format: date
+                analyticsNumber:
+                  type: string
+      responses:
+        "200":
+          description: Updated
+        "404":
+          description: Sample not found
+    delete:
+      summary: Delete sample
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Sample not found
+  /api/metals:
+    get:
+      summary: List metals
+      responses:
+        "200":
+          description: Metal list
+    post:
+      summary: Create metal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, symbol]
+              properties:
+                name:
+                  type: string
+                symbol:
+                  type: string
+                unit:
+                  type: string
+      responses:
+        "201":
+          description: Created
+  /api/metals/{id}:
+    put:
+      summary: Replace metal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, symbol]
+              properties:
+                name:
+                  type: string
+                symbol:
+                  type: string
+                unit:
+                  type: string
+      responses:
+        "200":
+          description: Updated
+        "404":
+          description: Metal not found
+    delete:
+      summary: Delete metal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Metal not found
+  /api/statistics/samples:
+    get:
+      summary: Read chart-ready sample statistics
+      parameters:
+        - name: locationId
+          in: query
+          schema:
+            type: integer
+          description: Optional location filter.
+        - name: year
+          in: query
+          schema:
+            type: integer
+          deprecated: true
+        - name: yearFrom
+          in: query
+          schema:
+            type: integer
+          description: Optional start year.
+        - name: yearTo
+          in: query
+          schema:
+            type: integer
+          description: Optional end year.
+        - name: metalId
+          in: query
+          schema:
+            type: integer
+          description: Optional metal filter.
+      responses:
+        "200":
+          description: Statistics
+  /api/calculations/concentration:
+    post:
+      summary: Queue concentration field calculation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [referenceLocationId, metalId, year]
+              properties:
+                referenceLocationId:
+                  type: integer
+                metalId:
+                  type: integer
+                year:
+                  type: integer
+                gridStepKm:
+                  type: number
+                  default: 0.7
+                areaSizeKm:
+                  type: number
+                  default: 200.0
+      responses:
+        "202":
+          description: Calculation queued
+        "503":
+          description: Calculation job was created but Kafka publish failed
+  /api/calculations:
+    get:
+      summary: List calculation jobs
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        "200":
+          description: Recent calculation jobs
+  /api/calculations/{id}:
+    get:
+      summary: Read calculation status and result
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Calculation result
+        "404":
+          description: Calculation job not found
+  /api/calculations/{id}/points:
+    get:
+      summary: Read calculated concentration grid points
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Calculated grid points
+        "404":
+          description: Calculation job not found
